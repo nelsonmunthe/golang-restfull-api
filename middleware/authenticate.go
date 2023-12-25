@@ -87,11 +87,3 @@ type unauthorizedResponse struct {
 	Data         *any   `json:"data"`
 	ResponseTime string `json:"responseTime"`
 }
-
-func WithAuthCRM() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		c.Set("crmAuth", struct{}{})
-		c.Next()
-		return
-	}
-}
