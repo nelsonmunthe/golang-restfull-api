@@ -19,7 +19,7 @@ func main() {
 		middleware.AllowCORS(),
 	)
 
-	evoDB := db.GormPostgres("host=localhost user=postgres password=Lumbanpaung,050490 dbname=postgres port=5432 sslmode=disable TimeZone=Asia/Jakarta")
+	evoDB := db.GormPostgres("host=localhost user=postgres password=password dbname=postgres port=5432 sslmode=disable TimeZone=Asia/Jakarta")
 	user := user.NewRequestHandler(evoDB)
 	user.Handle(router)
 
