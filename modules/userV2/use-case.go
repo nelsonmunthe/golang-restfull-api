@@ -160,7 +160,7 @@ func (uc UserV2Usecase) login(context context.Context, request RequestUserLogin)
 		return defaultErrorResponse(err)
 	}
 
-	match := bcryptpassword.CheckPasswordHash(request.Password, user.Password)
+	match, err := bcryptpassword.CheckPasswordHash(request.Password, user.Password)
 	if match == false {
 		return defaultErrorResponse(err)
 	}

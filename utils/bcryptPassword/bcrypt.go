@@ -2,9 +2,9 @@ package bcryptpassword
 
 import "golang.org/x/crypto/bcrypt"
 
-func CheckPasswordHash(password, hash string) bool {
+func CheckPasswordHash(password, hash string) (bool, error) {
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
-	return err == nil
+	return err == nil, err
 }
 
 func HashPassword(password string) (string, error) {
