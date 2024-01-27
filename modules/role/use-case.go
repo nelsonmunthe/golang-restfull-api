@@ -41,3 +41,20 @@ func (role RoleUsecase) GetList(context context.Context, query dto.QUeryRequest)
 		Message:      "get Role list successfully",
 	}, nil
 }
+
+func (role RoleUsecase) FindById(context context.Context, roleId int) (dto.ResponseMeta, error) {
+	roleDetail, err := role.roleRepo.FindById(context, roleId)
+
+	if err != nil {
+		return defaultErrorResponse(err)
+	}
+
+	return dto.ResponseMeta{
+		Success:      true,
+		MessageTitle: "",
+		Message:      "Success get list users",
+		ResponseTime: "",
+		Data:         roleDetail,
+	}, nil
+
+}

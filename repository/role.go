@@ -22,6 +22,7 @@ func NewRole(db *gorm.DB) Role {
 type RoleInterface interface {
 	GetList(ctx context.Context, query dto.QUeryRequest) ([]entity.Role, error)
 	CountByCondition(ctx context.Context, q string) (uint, error)
+	FindById(context context.Context, roleId int) (entity.Role, error)
 }
 
 func (role Role) GetList(ctx context.Context, query dto.QUeryRequest) ([]entity.Role, error) {
@@ -55,4 +56,11 @@ func (role Role) CountByCondition(ctx context.Context, q string) (uint, error) {
 	}
 	err := countQuery.Count(&count).Error
 	return uint(count), err
+}
+
+func (role Role) FindById(context context.Context, roleId int) (entity.Role, error) {
+	var roleDetail entity.Role
+	err := role.db.First(&roleDetail).Error
+	return roleDetail, err
+
 }

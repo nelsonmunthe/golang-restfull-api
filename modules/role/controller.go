@@ -13,3 +13,7 @@ type RoleController struct {
 func (role RoleController) GetList(context context.Context, query dto.QUeryRequest) (dto.BaseResponseList, error) {
 	return role.usecase.GetList(context, query)
 }
+
+func (role RoleController) FindById(context context.Context, userId int) (dto.ResponseMeta, error) {
+	return role.usecase.FindById(context, userId)
+}

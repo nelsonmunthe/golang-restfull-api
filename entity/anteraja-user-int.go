@@ -16,6 +16,7 @@ type AnterajaUserInt struct {
 	Created_at time.Time `json:"created_at"`
 	Updated_at time.Time `json:"updated_at"`
 	Viewer     bool      `json:"viewer"`
+	Role       Role      `gorm:"foreignKey:Role_id" json:"role"`
 }
 
 type AnterajaUserUpdateUserInt struct {
