@@ -7,11 +7,14 @@ import (
 	"anteraja/backend/repository"
 	bcryptpassword "anteraja/backend/utils/bcryptPassword"
 	"context"
+	"errors"
 	"fmt"
 )
 
 type UserV2Usecase struct {
 	userRepoV2 repository.AnterajaUserInterfaceV2
+	userDetail repository.UserDetailInterface
+	roleDetail repository.ControllerInterface
 }
 
 type UserV2InterfaceUsecase interface {
@@ -21,11 +24,12 @@ type UserV2InterfaceUsecase interface {
 	UpdateUser(context context.Context, userId uint, request RequestUserUpdateUser) (dto.ResponseMeta, error)
 	CreateUser(context context.Context, request RequestUser) (dto.ResponseMeta, error)
 	changeStatus(context context.Context, userId uint, request RequestUserUpdateStatus) (dto.ResponseMeta, error)
-	login(context context.Context, request RequestUserLogin) (dto.ResponseMeta, error)
+	Login(context context.Context, request RequestUserLogin) (dto.ResponseMeta, error)
+	SetPosition(context context.Context, request RequestSetPosition) (dto.ResponseMeta, error)
 }
 
 func (uc UserV2Usecase) FindByIdV2(context context.Context, userId uint) (dto.ResponseMeta, error) {
-	user, err := uc.userRepoV2.FindById(userId)
+	user, err := uc.userRepoV2.FindById(context, userId)
 
 	if err != nil {
 		return defaultErrorResponse(err)
@@ -128,7 +132,7 @@ func (uc UserV2Usecase) CreateUser(context context.Context, request RequestUser)
 }
 
 func (uc UserV2Usecase) changeStatus(context context.Context, userId uint, request RequestUserUpdateStatus) (dto.ResponseMeta, error) {
-	user, err := uc.userRepoV2.FindById(userId)
+	user, err := uc.userRepoV2.FindById(context, userId)
 	if err != nil {
 		return defaultErrorResponse((err))
 	}
@@ -152,7 +156,7 @@ func (uc UserV2Usecase) changeStatus(context context.Context, userId uint, reque
 	}, nil
 }
 
-func (uc UserV2Usecase) login(context context.Context, request RequestUserLogin) (dto.ResponseMeta, error) {
+func (uc UserV2Usecase) Login(context context.Context, request RequestUserLogin) (dto.ResponseMeta, error) {
 
 	user, err := uc.userRepoV2.FindByUsername(request.Username)
 
@@ -160,21 +164,95 @@ func (uc UserV2Usecase) login(context context.Context, request RequestUserLogin)
 		return defaultErrorResponse(err)
 	}
 
+	if user.Status == false {
+		return defaultErrorResponse(errors.New("User Inactive, Please Contact your administrator."))
+	}
+
+	userDetails, err := uc.userDetail.GetListById(context, int(user.ID))
+
+	if err != nil {
+		return defaultErrorResponse(err)
+	}
+
+	listArea := []uint{}
+	for _, entry := range userDetails {
+		listArea = append(listArea, uint(entry.Area_id))
+	}
+
+	roles, err := uc.roleDetail.GetListById(context, int(user.Role_id))
+	if err != nil {
+		return defaultErrorResponse(err)
+	}
+	controllerName := []string{}
+	for _, entry := range roles {
+		controllerName = append(controllerName, entry.Controller.Controller_name)
+	}
+
 	match, err := bcryptpassword.CheckPasswordHash(request.Password, user.Password)
 	if match == false {
 		return defaultErrorResponse(err)
 	}
 
-	token, err := middleware.GenerateJwtToken(request.Username)
+	tokenPayload := middleware.TokenPayload{
+		Username:    request.Username,
+		ID:          int(user.ID),
+		Position_id: user.UserRole.Name,
+		Role_id:     int(user.UserRole.ID),
+		Viewer:      user.Viewer,
+		Areas:       listArea,
+	}
+
+	token, err := middleware.GenerateJwtToken(tokenPayload)
 	if err != nil {
 		return defaultErrorResponse(err)
 	}
+
+	subsidiary := []Subsidiary{}
+
+	sub1 := Subsidiary{
+		Subsidiary_id:   "1",
+		Subsidiary_name: "PT Tri Adi Bersama",
+	}
+
+	sub2 := Subsidiary{
+		Subsidiary_id:   "3",
+		Subsidiary_name: "PT Adi Sarana Logistik",
+	}
+
+	subsidiary = append(subsidiary, sub1)
+	subsidiary = append(subsidiary, sub2)
+
+	result := LoginResponse{
+		Token:       token,
+		User_id:     int(user.ID),
+		Username:    user.Username,
+		Role_id:     user.UserRole.ID,
+		Role:        user.UserRole.Name,
+		Controllers: controllerName,
+		Subsidiarys: subsidiary,
+	}
+
 	return dto.ResponseMeta{
 		Success:      true,
 		MessageTitle: "",
 		Message:      "Success Login user",
 		ResponseTime: "",
-		Data:         token,
+		Data:         result,
 	}, nil
+}
 
+func (uc UserV2Usecase) SetPosition(context context.Context, request RequestSetPosition) (dto.ResponseMeta, error) {
+	user, err := uc.userDetail.FindUserDetail(context, request.User_id, request.Subsidiary_id)
+
+	if err != nil {
+		return defaultErrorResponse(err)
+	}
+
+	return dto.ResponseMeta{
+		Success:      true,
+		MessageTitle: "",
+		Message:      "Success Login user",
+		ResponseTime: "",
+		Data:         user,
+	}, nil
 }

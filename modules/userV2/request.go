@@ -3,10 +3,10 @@ package userv2
 import "time"
 
 type RequestUser struct {
-	ID         int       `gorm:"primaryKey" json:"id"`
+	ID         uint      `gorm:"primaryKey" json:"id"`
 	Username   string    `json:"username"`
 	Password   string    `json:"password"`
-	Role_id    string    `json:"role_id"`
+	Role_id    uint      `json:"role_id"`
 	Status     bool      `json:"status"`
 	Last_login time.Time `json:"last_login"`
 	Created_by string    `json:"created_by"`
@@ -27,6 +27,12 @@ type RequestUserUpdateUser struct {
 }
 
 type RequestUserLogin struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
+	Username string `json:"username" binding:"required"`
+	Password string `json:"password" binding:"required"`
+}
+
+type RequestSetPosition struct {
+	User_id       int    `json:"user_id" binding:"required"`
+	Role_id       int    `json:"role_id" binding:"required"`
+	Subsidiary_id string `json:"subsidiary_id" binding:"required"`
 }

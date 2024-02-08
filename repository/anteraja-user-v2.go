@@ -18,15 +18,21 @@ func NewAnterajaUserV2(evoDB *gorm.DB) AnterajaUserV2 {
 	}
 }
 
-func (repo AnterajaUserV2) FindById(id interface{}) (entity.AnterajaUserInt, error) {
-	var user entity.AnterajaUserInt
-	err := repo.db.First(&user, id).Error
+func (repo AnterajaUserV2) FindById(context context.Context, id interface{}) (entity.AnterajaUserInt, error) {
+	user := entity.AnterajaUserInt{}
+	err := repo.db.Joins("UserRole").First(&user, id).Error
+	return user, err
+}
+
+func (repo AnterajaUserV2) FindByUsername(username interface{}) (entity.AnterajaUserInt, error) {
+	user := entity.AnterajaUserInt{}
+	err := repo.db.Model(&user).Joins("UserRole").Where("username = ?", username).First(&user).Error
 	return user, err
 }
 
 func (repo AnterajaUserV2) GetListUser() ([]entity.AnterajaUserInt, error) {
 	var user []entity.AnterajaUserInt
-	err := repo.db.Find(&user).Error
+	err := repo.db.Joins("UserRole").Find(&user).Error
 	return user, err
 }
 
@@ -69,14 +75,8 @@ func HashPassword(password string) (string, error) {
 	return string(bytes), err
 }
 
-func (repo AnterajaUserV2) FindByUsername(username interface{}) (entity.AnterajaUserInt, error) {
-	var user entity.AnterajaUserInt
-	err := repo.db.Model(&user).Where("username = ?", username).Find(&user).Error
-	return user, err
-}
-
 type AnterajaUserInterfaceV2 interface {
-	FindById(id interface{}) (entity.AnterajaUserInt, error)
+	FindById(context context.Context, id interface{}) (entity.AnterajaUserInt, error)
 	GetListUser() ([]entity.AnterajaUserInt, error)
 	DeleteUser(userId interface{}) (entity.AnterajaUserInt, error)
 	UpdateUser(context context.Context, userId interface{}, request entity.AnterajaUserUpdateUserInt) error

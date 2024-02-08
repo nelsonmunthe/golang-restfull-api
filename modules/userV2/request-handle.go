@@ -24,8 +24,13 @@ func NewUserRequestHandler(evoDB *gorm.DB) UserRequestHandlerV2 {
 
 func (h UserRequestHandlerV2) HandleUserV2(router *gin.Engine) {
 	userRepoV2 := repository.NewAnterajaUserV2(h.evoDB)
+	userDetail := repository.NewUserDetail(h.evoDB)
+	roleDetail := repository.NewController(h.evoDB)
+
 	userV2Usecase := UserV2Usecase{
 		userRepoV2: userRepoV2,
+		userDetail: userDetail,
+		roleDetail: roleDetail,
 	}
 	h.ctrl = UserController{
 		useCase: userV2Usecase,
@@ -39,6 +44,7 @@ func (h UserRequestHandlerV2) HandleUserV2(router *gin.Engine) {
 	userV2Router.POST("/create", middleware.Authenticate(), h.CreateUser)
 	userV2Router.PUT("/change-status/:userId", middleware.Authenticate(), h.changeStatus)
 	userV2Router.POST("/login", h.login)
+	userV2Router.POST("/set-position", h.setPosition)
 }
 
 func (h UserRequestHandlerV2) FindByIdV2(context *gin.Context) {
@@ -193,6 +199,27 @@ func (h UserRequestHandlerV2) login(context *gin.Context) {
 	}
 
 	response, err := h.ctrl.login(context.Request.Context(), request)
+	if response.Success == false {
+		context.JSON(http.StatusNotFound, response)
+		return
+	}
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, dto.DefaultErrorResponseWithMessage(err.Error()))
+		return
+	}
+	context.JSON(http.StatusOK, response)
+}
+
+func (h UserRequestHandlerV2) setPosition(context *gin.Context) {
+	var request RequestSetPosition
+	err := context.BindJSON(&request)
+
+	if err != nil {
+		context.JSON(http.StatusBadRequest, dto.DefaultErrorResponse())
+		return
+	}
+
+	response, err := h.ctrl.SetPosition(context.Request.Context(), request)
 	if response.Success == false {
 		context.JSON(http.StatusNotFound, response)
 		return

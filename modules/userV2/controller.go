@@ -34,5 +34,9 @@ func (c UserController) changeStatus(context context.Context, userId uint, reque
 }
 
 func (c UserController) login(context context.Context, request RequestUserLogin) (dto.ResponseMeta, error) {
-	return c.useCase.login(context, request)
+	return c.useCase.Login(context, request)
+}
+
+func (c UserController) SetPosition(context context.Context, request RequestSetPosition) (dto.ResponseMeta, error) {
+	return c.useCase.SetPosition(context, request)
 }

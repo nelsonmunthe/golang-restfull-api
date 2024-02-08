@@ -5,10 +5,10 @@ import (
 )
 
 type AnterajaUserInt struct {
-	ID         int       `gorm:"primaryKey" json:"id"`
+	ID         uint      `gorm:"primaryKey" json:"id"`
 	Username   string    `json:"username"`
 	Password   string    `json:"password"`
-	Role_id    string    `json:"role_id"`
+	Role_id    uint      `json:"role_id"`
 	Status     bool      `json:"status"`
 	Last_login time.Time `json:"last_login"`
 	Created_by string    `json:"created_by"`
@@ -16,7 +16,7 @@ type AnterajaUserInt struct {
 	Created_at time.Time `json:"created_at"`
 	Updated_at time.Time `json:"updated_at"`
 	Viewer     bool      `json:"viewer"`
-	Role       Role      `gorm:"foreignKey:Role_id" json:"role"`
+	UserRole   Role      `gorm:"foreignKey:Role_id"`
 }
 
 type AnterajaUserUpdateUserInt struct {

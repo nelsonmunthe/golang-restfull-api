@@ -8,11 +8,20 @@ import (
 
 var secretKey = []byte("secret-key")
 
-func GenerateJwtToken(username string) (string, error) {
+type TokenPayload struct {
+	Username    string `json:"username"`
+	ID          int    `json:"id"`
+	Position_id string `json:"position_id"`
+	Role_id     int    `json:"role_id"`
+	Viewer      bool   `json:"viewer"`
+	Areas       []uint `json:"areas"`
+}
+
+func GenerateJwtToken(payload TokenPayload) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256,
 		jwt.MapClaims{
-			"username": username,
-			"exp":      time.Now().Add(time.Hour * 24).Unix(),
+			"payload": payload,
+			"exp":     time.Now().Add(time.Hour * 24).Unix(),
 		})
 
 	tokenString, err := token.SignedString(secretKey)
