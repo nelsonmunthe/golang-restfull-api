@@ -2,6 +2,7 @@ package main
 
 import (
 	"anteraja/backend/middleware"
+	deposit "anteraja/backend/modules/deposite"
 	"anteraja/backend/modules/role"
 	userv2 "anteraja/backend/modules/userV2"
 	"anteraja/backend/utils/db"
@@ -26,6 +27,9 @@ func main() {
 
 	role := role.NewRoleRequestHandler(db)
 	role.HandleRole(router)
+
+	deposit := deposit.NewRequestDepositHandler(db)
+	deposit.HandleDeposit(router)
 
 	err = router.Run()
 

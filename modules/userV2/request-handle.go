@@ -4,6 +4,7 @@ import (
 	"anteraja/backend/dto"
 	"anteraja/backend/middleware"
 	"anteraja/backend/repository"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -45,6 +46,13 @@ func (h UserRequestHandlerV2) HandleUserV2(router *gin.Engine) {
 	userV2Router.PUT("/change-status/:userId", middleware.Authenticate(), h.changeStatus)
 	userV2Router.POST("/login", h.login)
 	userV2Router.POST("/set-position", h.setPosition)
+	userV2Router.GET("/location", h.FindByLocation)
+}
+
+func (h UserRequestHandlerV2) FindByLocation(context *gin.Context) {
+	query := dto.QUeryRequest{}
+	err := context.BindQuery(&query)
+	fmt.Println("query", query, err)
 }
 
 func (h UserRequestHandlerV2) FindByIdV2(context *gin.Context) {
