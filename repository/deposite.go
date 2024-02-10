@@ -22,6 +22,7 @@ func NewDeposit(db *gorm.DB) Deposit {
 type DepositInterface interface {
 	GetList(ctx context.Context, query dto.RequestDeposit, page dto.PaginationRequest) ([]entity.DepositeHeaderEntity, error)
 	CountByCondition(ctx context.Context, query dto.RequestDeposit) (uint, error)
+	FilterDeposit(ctx context.Context, subsidiary_id string, filter string) ([]interface{}, error)
 }
 
 func (deposit Deposit) GetList(ctx context.Context, query dto.RequestDeposit, page dto.PaginationRequest) ([]entity.DepositeHeaderEntity, error) {
@@ -45,4 +46,15 @@ func (deposit Deposit) CountByCondition(ctx context.Context, query dto.RequestDe
 		Where(query)
 	err := countQuery.Count(&count).Error
 	return uint(count), err
+}
+
+func (deposit Deposit) FilterDeposit(ctx context.Context, subsidiary_id string, filter string) ([]interface{}, error) {
+	var deposits []interface{}
+
+	err := deposit.db.WithContext(ctx).
+		Table("trx_deposit_header").
+		Select(filter).Where("subsidiary_id = ? ", subsidiary_id).
+		Group(filter).
+		Find(&deposits).Error
+	return deposits, err
 }

@@ -8,7 +8,6 @@ import (
 	bcryptpassword "anteraja/backend/utils/bcryptPassword"
 	"context"
 	"errors"
-	"fmt"
 )
 
 type UserV2Usecase struct {
@@ -46,9 +45,6 @@ func (uc UserV2Usecase) FindByIdV2(context context.Context, userId uint) (dto.Re
 
 func (uc UserV2Usecase) GetListUser(context context.Context) (dto.ResponseMeta, error) {
 	users, err := uc.userRepoV2.GetListUser()
-	for i := range users {
-		fmt.Println("index", users[i].Username)
-	}
 
 	if err != nil {
 		return defaultErrorResponse(err)

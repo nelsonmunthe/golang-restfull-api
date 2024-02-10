@@ -13,6 +13,7 @@ type DepositUsecase struct {
 
 type DepositIUsecaseInterface interface {
 	GetList(ctx context.Context, query dto.QUeryRequest, pagination dto.PaginationRequest) (dto.BaseResponseList, error)
+	FilterDeposit(ctx context.Context, subsidiary_id string, filter string) (dto.ResponseMeta, error)
 }
 
 func (usecase DepositUsecase) GetList(ctx context.Context, query dto.RequestDeposit, page dto.PaginationRequest) (dto.BaseResponseList, error) {
@@ -39,5 +40,20 @@ func (usecase DepositUsecase) GetList(ctx context.Context, query dto.RequestDepo
 		MessageTitle: "",
 		Message:      "get Deposit list successfully",
 	}, nil
+}
 
+func (usecase DepositUsecase) FilterDeposit(ctx context.Context, subsidiary_id string, filter string) (dto.ResponseMeta, error) {
+	deposites, err := usecase.depositRepo.FilterDeposit(ctx, subsidiary_id, filter)
+
+	if err != nil {
+		return defaultErrorResponse(err)
+	}
+
+	return dto.ResponseMeta{
+		Success:      true,
+		MessageTitle: "",
+		Message:      "Success get list Filter Deposit",
+		ResponseTime: "",
+		Data:         deposites,
+	}, nil
 }

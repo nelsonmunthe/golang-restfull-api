@@ -4,6 +4,7 @@ import (
 	"anteraja/backend/dto"
 	"anteraja/backend/repository"
 	"net/http"
+	"reflect"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -32,6 +33,7 @@ func (deposit DepositHandler) HandleDeposit(router *gin.Engine) {
 	depositRouter := router.Group("/deposit")
 
 	depositRouter.GET("/list", deposit.GetList)
+	depositRouter.GET("/filter", deposit.FilterDeposit)
 }
 
 func (deposit DepositHandler) GetList(context *gin.Context) {
@@ -64,5 +66,45 @@ func (deposit DepositHandler) GetList(context *gin.Context) {
 		context.JSON(http.StatusInternalServerError, dto.DefaultErrorResponseWithMessage(err.Error()))
 		return
 	}
+	context.JSON(http.StatusOK, response)
+}
+
+func (deposit DepositHandler) FilterDeposit(context *gin.Context) {
+	queryDeposit := dto.RequestFilterDeposit{}
+	err := context.BindQuery(&queryDeposit)
+
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, dto.DefaultErrorResponseWithMessage(err.Error()))
+		return
+	}
+
+	if queryDeposit.Subsidiary_id == "" {
+		context.JSON(http.StatusInternalServerError, dto.DefaultErrorResponseWithMessage("Subsidiary_id can't be empty"))
+		return
+	}
+
+	var filtering string
+
+	values := reflect.ValueOf(queryDeposit)
+
+	for index := 0; index < values.NumField(); index++ {
+		field := values.Field(index)
+		if field.Interface() == true {
+			filtering = values.Type().Field(index).Tag.Get("json")
+		}
+	}
+
+	response, err := deposit.ctrl.FilterDeposit(context, queryDeposit.Subsidiary_id, filtering)
+
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, dto.DefaultErrorResponseWithMessage(err.Error()))
+		return
+	}
+
+	if response.Success == false {
+		context.JSON(http.StatusNotFound, response)
+		return
+	}
+
 	context.JSON(http.StatusOK, response)
 }
