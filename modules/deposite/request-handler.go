@@ -3,7 +3,6 @@ package deposit
 import (
 	"anteraja/backend/dto"
 	"anteraja/backend/repository"
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -44,19 +43,9 @@ func (deposit DepositHandler) GetList(context *gin.Context) {
 		return
 	}
 
-	pagination := dto.PaginationRequest{}
+	var pagination dto.PaginationRequest
 
-	if pagination.Page <= 0 {
-		pagination.Page = int(1)
-	}
-
-	if pagination.PerPage <= 0 {
-		pagination.PerPage = int(10)
-	}
-	fmt.Println("pagination", pagination)
-	// // err := context.BindQuery(&pagination)
-
-	if err != nil {
+	if err := context.ShouldBindQuery(&pagination); err != nil {
 		context.JSON(http.StatusInternalServerError, dto.DefaultErrorResponseWithMessage(err.Error()))
 		return
 	}
