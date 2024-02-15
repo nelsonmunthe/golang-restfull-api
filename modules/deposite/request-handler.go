@@ -61,7 +61,7 @@ func (deposit DepositHandler) GetList(context *gin.Context) {
 	}
 
 	response, err := deposit.ctrl.GetList(context, query, pagination)
-	if response.Success == false {
+	if !response.Success {
 		context.JSON(http.StatusNotFound, response)
 		return
 	}
@@ -104,7 +104,7 @@ func (deposit DepositHandler) FilterDeposit(context *gin.Context) {
 		return
 	}
 
-	if response.Success == false {
+	if !response.Success {
 		context.JSON(http.StatusNotFound, response)
 		return
 	}
@@ -144,7 +144,7 @@ func (deposit DepositHandler) FilterUserByLocation(context *gin.Context) {
 		return
 	}
 
-	if response.Success == false {
+	if !response.Success {
 		context.JSON(http.StatusNotFound, response)
 		return
 	}
