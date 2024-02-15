@@ -25,3 +25,13 @@ type RequestFilterDeposit struct {
 	Area_name               bool   `form:"area_name" json:"area_name"`
 	Subsidiary_id           string `form:"subsidiary_id" json:"subsidiary_id"`
 }
+
+type UserDetailLocationEntity struct {
+	Subsidiary_id string `form:"subsidiary_id" json:"subsidiary_id"`
+	Location_id   int    `form:"location_id" json:"location_id"`
+	Location_name string `form:"location_name" json:"location_name"`
+	Area_id       int    `form:"area_id" json:"area_id"`
+	Area_name     string `form:"area_name" json:"area_name"`
+	Region_id     int    `form:"region_id" json:"region_id"`
+	Region_name   string `form:"region_name" json:"region_name"`
+}

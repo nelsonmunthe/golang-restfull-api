@@ -23,8 +23,10 @@ func NewRequestDepositHandler(db *gorm.DB) DepositHandler {
 
 func (deposit DepositHandler) HandleDeposit(router *gin.Engine) {
 	depositRepo := repository.NewDeposit(deposit.db)
+	userDetal := repository.NewUserDetail(deposit.db)
 	depositUsecase := DepositUsecase{
 		depositRepo: depositRepo,
+		userDetail:  userDetal,
 	}
 	deposit.ctrl = DepositController{
 		usecase: depositUsecase,
@@ -34,6 +36,7 @@ func (deposit DepositHandler) HandleDeposit(router *gin.Engine) {
 
 	depositRouter.GET("/list", deposit.GetList)
 	depositRouter.GET("/filter", deposit.FilterDeposit)
+	depositRouter.GET("/location", deposit.FilterUserByLocation)
 }
 
 func (deposit DepositHandler) GetList(context *gin.Context) {
@@ -95,6 +98,46 @@ func (deposit DepositHandler) FilterDeposit(context *gin.Context) {
 	}
 
 	response, err := deposit.ctrl.FilterDeposit(context, queryDeposit.Subsidiary_id, filtering)
+
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, dto.DefaultErrorResponseWithMessage(err.Error()))
+		return
+	}
+
+	if response.Success == false {
+		context.JSON(http.StatusNotFound, response)
+		return
+	}
+
+	context.JSON(http.StatusOK, response)
+}
+
+func (deposit DepositHandler) FilterUserByLocation(context *gin.Context) {
+	queryDepositLocation := dto.UserDetailLocationEntity{}
+	err := context.BindQuery(&queryDepositLocation)
+
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, dto.DefaultErrorResponseWithMessage(err.Error()))
+		return
+	}
+
+	type Keywords struct {
+		Keyword string `form:"keyword" json:"keyword"`
+	}
+
+	keywords := Keywords{}
+
+	if err := context.ShouldBindQuery(&keywords); err != nil {
+		context.JSON(http.StatusInternalServerError, dto.DefaultErrorResponseWithMessage(err.Error()))
+		return
+	}
+
+	if keywords.Keyword == "" || queryDepositLocation.Subsidiary_id == "" {
+		context.JSON(http.StatusInternalServerError, dto.DefaultErrorResponseWithMessage("subsidiary_id can't be empty"))
+		return
+	}
+
+	response, err := deposit.ctrl.FilterUserByLocation(context, queryDepositLocation, keywords.Keyword)
 
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, dto.DefaultErrorResponseWithMessage(err.Error()))

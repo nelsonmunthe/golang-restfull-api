@@ -10,6 +10,7 @@ require (
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/google/uuid v1.6.0
 	golang.org/x/crypto v0.14.0
+	golang.org/x/exp v0.0.0-20240205201215-2c58cdc269a3
 	golang.org/x/net v0.10.0
 	gorm.io/driver/postgres v1.5.4
 	gorm.io/gorm v1.25.5

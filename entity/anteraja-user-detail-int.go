@@ -33,3 +33,16 @@ type UserDetailEntity struct {
 func (UserDetailEntity) TableName() string {
 	return "ms_user_detail_revamp"
 }
+
+type UserDetailLocationEntity struct {
+	Location_id   int    `json:"location_id"`
+	Location_name string `json:"location_name"`
+	Area_id       int    `json:"area_id"`
+	Area_name     string `json:"area_name"`
+	Region_id     int    `json:"region_id"`
+	Region_name   string `json:"region_name"`
+}
+
+func (UserDetailLocationEntity) TableName() string {
+	return "ms_user_detail_revamp"
+}

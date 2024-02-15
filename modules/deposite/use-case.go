@@ -3,17 +3,21 @@ package deposit
 import (
 	"anteraja/backend/dto"
 	"anteraja/backend/repository"
+	"anteraja/backend/services"
 	"anteraja/backend/utils/pagination"
 	"context"
+	"fmt"
 )
 
 type DepositUsecase struct {
 	depositRepo repository.DepositInterface
+	userDetail  repository.UserDetailInterface
 }
 
 type DepositIUsecaseInterface interface {
 	GetList(ctx context.Context, query dto.QUeryRequest, pagination dto.PaginationRequest) (dto.BaseResponseList, error)
 	FilterDeposit(ctx context.Context, subsidiary_id string, filter string) (dto.ResponseMeta, error)
+	FilterUserByLocation(ctx context.Context, query dto.UserDetailLocationEntity, keyword string) (dto.ResponseMeta, error)
 }
 
 func (usecase DepositUsecase) GetList(ctx context.Context, query dto.RequestDeposit, page dto.PaginationRequest) (dto.BaseResponseList, error) {
@@ -21,6 +25,14 @@ func (usecase DepositUsecase) GetList(ctx context.Context, query dto.RequestDepo
 	if err != nil {
 		return dto.DefaultErrorBaseResponseList(err), err
 	}
+
+	result, err := services.GetNetsuite("GET")
+
+	if err != nil {
+		return dto.DefaultErrorBaseResponseList(err), err
+	}
+
+	fmt.Println("api call", result)
 
 	count, err := usecase.depositRepo.CountByCondition(ctx, query)
 
@@ -55,5 +67,22 @@ func (usecase DepositUsecase) FilterDeposit(ctx context.Context, subsidiary_id s
 		Message:      "Success get list Filter Deposit",
 		ResponseTime: "",
 		Data:         deposites,
+	}, nil
+}
+
+func (usecase DepositUsecase) FilterUserByLocation(ctx context.Context, query dto.UserDetailLocationEntity, keyword string) (dto.ResponseMeta, error) {
+
+	locations, err := usecase.userDetail.FilterUserByLocation(ctx, query, keyword)
+
+	if err != nil {
+		return defaultErrorResponse(err)
+	}
+
+	return dto.ResponseMeta{
+		Success:      true,
+		MessageTitle: "",
+		Message:      "Success get list Filter Deposit by locations",
+		ResponseTime: "",
+		Data:         locations,
 	}, nil
 }

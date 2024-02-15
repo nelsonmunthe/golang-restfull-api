@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"anteraja/backend/dto"
 	"anteraja/backend/entity"
 	"context"
 
@@ -20,6 +21,7 @@ func NewUserDetail(db *gorm.DB) UserDetail {
 type UserDetailInterface interface {
 	GetListById(ctx context.Context, userId int) ([]entity.UserDetailEntity, error)
 	FindUserDetail(ctx context.Context, userId int, subSidiaryId string) (entity.UserDetailEntity, error)
+	FilterUserByLocation(ctx context.Context, query dto.UserDetailLocationEntity, keyword string) ([]entity.UserDetailLocationEntity, error)
 }
 
 func (repo UserDetail) GetListById(ctx context.Context, userId int) ([]entity.UserDetailEntity, error) {
@@ -47,4 +49,37 @@ func (repo UserDetail) FindUserDetail(ctx context.Context, userId int, subSidiar
 		Error
 
 	return userDetail, err
+}
+
+func (repo UserDetail) FilterUserByLocation(ctx context.Context, query dto.UserDetailLocationEntity, keyword string) ([]entity.UserDetailLocationEntity, error) {
+	var userDetails []entity.UserDetailLocationEntity
+
+	var err error
+
+	if keyword == "location" {
+		err = repo.db.WithContext(ctx).
+			Select("location_id", "location_name", "area_id", "area_name", "region_id", "region_name").
+			Where(query).
+			Group("location_id, location_name, area_id, area_name, region_id, region_name").
+			Find(&userDetails).
+			Error
+
+	} else if keyword == "area" {
+		err = repo.db.WithContext(ctx).
+			Select("area_id", "area_name", "region_id", "region_name").
+			Where(query).
+			Group("area_id, area_name, region_id, region_name").
+			Find(&userDetails).
+			Error
+
+	} else if keyword == "region" {
+		err = repo.db.WithContext(ctx).
+			Select("region_id", "region_name").
+			Where(query).
+			Group("region_id, region_name").
+			Find(&userDetails).
+			Error
+	}
+
+	return userDetails, err
 }
