@@ -37,6 +37,7 @@ func (deposit DepositHandler) HandleDeposit(router *gin.Engine) {
 	depositRouter.GET("/list", deposit.GetList)
 	depositRouter.GET("/filter", deposit.FilterDeposit)
 	depositRouter.GET("/location", deposit.FilterUserByLocation)
+	depositRouter.GET("/akun-bank-regional", deposit.GetAkuBankRegional)
 }
 
 func (deposit DepositHandler) GetList(context *gin.Context) {
@@ -138,6 +139,29 @@ func (deposit DepositHandler) FilterUserByLocation(context *gin.Context) {
 	}
 
 	response, err := deposit.ctrl.FilterUserByLocation(context, queryDepositLocation, keywords.Keyword)
+
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, dto.DefaultErrorResponseWithMessage(err.Error()))
+		return
+	}
+
+	if !response.Success {
+		context.JSON(http.StatusNotFound, response)
+		return
+	}
+
+	context.JSON(http.StatusOK, response)
+}
+
+func (deposit DepositHandler) GetAkuBankRegional(context *gin.Context) {
+	queryDepositLocation := dto.UserDetailLocationEntity{}
+	err := context.BindQuery(&queryDepositLocation)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, dto.DefaultErrorResponseWithMessage(err.Error()))
+		return
+	}
+
+	response, err := deposit.ctrl.GetAkuBankRegional(context, queryDepositLocation)
 
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, dto.DefaultErrorResponseWithMessage(err.Error()))

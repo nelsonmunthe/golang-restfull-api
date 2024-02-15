@@ -4,9 +4,9 @@ import (
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"math/rand"
 	"net/http"
 	"net/url"
@@ -70,10 +70,9 @@ func GetNetsuite(method string) (interface{}, error) {
 	typeOfS := values.Type()
 
 	var dataOauth = ""
-	var keys []string
+
 	for index := 0; index < values.NumField(); index++ {
 		key := typeOfS.Field(index).Tag.Get("json")
-		keys = append(keys, key)
 		if key != "token_secret" && key != "consumer_key" && key != "httpmethod" && key != "baseurl" && key != "consumer_secret" && key != "accountid" {
 			if key == "oauth_timestamp" {
 				var keys = key + "="
@@ -109,6 +108,7 @@ func GetNetsuite(method string) (interface{}, error) {
 
 	req.Header.Set("Authorization", OAuth)
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Accept", "application/json")
 
 	query := req.URL.Query()
 	query.Add("script", "326")
@@ -125,13 +125,16 @@ func GetNetsuite(method string) (interface{}, error) {
 		return "request failed", err
 	}
 
-	responseData, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		log.Fatal(err)
-		return responseData, err
-	}
 	// Always close the response body
 	defer res.Body.Close()
 
-	return string(responseData), err
+	responseData, err := ioutil.ReadAll(res.Body)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var responseObject []Response
+	json.Unmarshal([]byte(string(responseData)), &responseObject)
+	return responseObject, err
 }
